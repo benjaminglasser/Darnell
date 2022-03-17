@@ -4,9 +4,62 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Darnell &lt3's data</title>
 </head>
 <body>
-    
+    <!-- <button id='trigBTN'>Get Data</button> -->
+
+
+
+    <!-- LOAD P5JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
+    <!-- get request to adafruit io -->
+    <script>
+        // let trigBTN = document.getElementById('trigBTN');
+        let ioURL = 'https://io.adafruit.com/api/v2/glasserben/feeds/tempfeed/data?';
+        let ioLimitQ = 'limit=';
+        let ioLimitN = 1000
+        let ioInclude = '&include=value';
+        let data;
+        let slider; 
+
+        function preload(){
+            fetchData();
+        }
+
+        function setup(){
+            slider = createSlider(1,1000, 10, 1);
+            slider.position(20, 80)
+            slider.changed(fetchData);
+        }
+
+        function draw(){
+
+        }
+
+        function fetchData(){ 
+            if(slider){
+                console.log('value = ' + slider.value())
+                ioLimitN = slider.value();
+            }
+            let assembledURL = ioURL + ioLimitQ + ioLimitN + ioInclude;
+            data = loadJSON(assembledURL, dataHandler, errorHandler);
+        }
+
+        function dataHandler(APIdata) {
+
+            APIdata.forEach(element => {
+                // console.log(element.value)
+            })
+        }
+
+        function errorHandler(APIerror) {
+            console.error(APIerror);
+        }
+
+        // trigBTN.addEventListener('click', () => {
+            
+        // })
+    </script>
 </body>
 </html>
