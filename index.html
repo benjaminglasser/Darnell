@@ -9,51 +9,136 @@
 <body>
     <!-- <button id='trigBTN'>Get Data</button> -->
 
-
-
     <!-- LOAD P5JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
     <!-- get request to adafruit io -->
     <script>
         // let trigBTN = document.getElementById('trigBTN');
-        let ioURL = 'https://io.adafruit.com/api/v2/glasserben/feeds/tempfeed/data?';
+        let ioTempURL = 'https://io.adafruit.com/api/v2/glasserben/feeds/tempfeed/data?';
+        let ioLightURL = 'https://io.adafruit.com/api/v2/glasserben/feeds/lightfeed/data?';
+        let ioSoundURL = 'https://io.adafruit.com/api/v2/glasserben/feeds/soundfeed/data?';
         let ioLimitQ = 'limit=';
-        let ioLimitN = 1000
-        let ioInclude = '&include=value';
-        let data;
-        let slider; 
+        let ioLimitN = 1000;
+        // let ioST = 'start_time=';
+        // let ioSTval = '2022-03-10T00:00Z';
+        // let ioET = 'end_time=';
+        // let ioETval = '2022-03-17T10:00Z';
+        let tempData;
+        let lightData;
+        let soundData;
+        // let slider; 
+        let tempValues = [];
+        let lightValues = [];
+        let soundValues = [];
+        let times = [];
+        let time = 0;
+
+        // let times = [];
 
         function preload(){
             fetchData();
         }
 
         function setup(){
-            slider = createSlider(1,1000, 10, 1);
-            slider.position(20, 80)
-            slider.changed(fetchData);
+            createCanvas(1000, 800);
+            // ortho(-width, width, height, -height/2, 0.1, 100);
+            // slider = createSlider(1,1000, 1000, 1);
+            // slider.position(20, 80);
+            // slider.changed(fetchData);
+            // colorMode(HSB)
+            
         }
 
-        function draw(){
+        function draw(){   
+            // console.log(tempValues.length) 
+            background(0);
+            noFill();
+            for (let x = 10; x < map(tempValues.length, 0, 1000, 0, width-10); x ++ ) {
+                {
+                    stroke(255, 
+                    map(times[x].getMinutes(), 0, 60, 0, 255), 
+                    map(times[x].getMinutes(), 0, 60, 0, 255));
+                    // fill(map(times[x].getMinutes(), 0, 60, 0, 255), 255, 255)
+                    line(x, map(tempValues[x], 61,69, height,50), x+1, map(tempValues[x+1], 61,69, height,50)  )
+                    // circle(x, map(values[x], 62,69, height,0), map(values[x],64,67, 10,30) )
+		        }
+	        }
+            for (let x = 10; x < map(lightValues.length, 0, 1000, 0, width-10); x ++ ) {
+                {
+                    stroke(map(times[x].getMinutes(), 0, 60, 0, 255), 
+                    255, 
+                    map(times[x].getMinutes(), 0, 60, 0, 255));
+                    // fill(map(times[x].getMinutes(), 0, 60, 0, 255), 255, 255)
+                    line(x, map(lightValues[x], 0,4096, height,0), x+1, map(lightValues[x+1], 0,4096, height,0)  )
+                    // circle(x, map(values[x], 62,69, height,0), map(values[x],64,67, 10,30) )
+		        }
+	        }
+            for (let x = 10; x < map(soundValues.length, 0, 1000, 0, width-10); x ++ ) {
+                {
+                    stroke(map(times[x].getMinutes(), 0, 60, 0, 255), 
+                    map(times[x].getMinutes(), 0, 60, 0, 255), 
+                            255);
+                    // fill(map(times[x].getMinutes(), 0, 60, 0, 255), 255, 255)
+                    line(x, map(soundValues[x], 0,4096, height-20,0), x+1, map(soundValues[x+1], 0,4096, height-20,0)  )
+                    // circle(x, map(values[x], 62,69, height,0), map(values[x],64,67, 10,30) )
+		        }
+	        }
 
         }
 
         function fetchData(){ 
-            if(slider){
-                console.log('value = ' + slider.value())
-                ioLimitN = slider.value();
-            }
-            let assembledURL = ioURL + ioLimitQ + ioLimitN + ioInclude;
-            data = loadJSON(assembledURL, dataHandler, errorHandler);
+            // if(slider){
+            //     // console.log('value = ' + slider.value())
+            //     ioLimitN = slider.value();
+            // }
+            let assembledTempURL = ioTempURL + ioLimitQ + ioLimitN 
+            // + '&' + ioST + ioSTval + '&' + ioET + ioETval;
+            tempData = loadJSON(assembledTempURL, dataTempHandler, errorTempHandler);
+
+            let assembledLightURL = ioLightURL + ioLimitQ + ioLimitN 
+            // + '&' + ioST + ioSTval + '&' + ioET + ioETval;
+            lightData = loadJSON(assembledLightURL, dataLightHandler, errorLightHandler);
+
+            let assembledSoundURL = ioSoundURL + ioLimitQ + ioLimitN 
+            // + '&' + ioST + ioSTval + '&' + ioET + ioETval;
+            soundData = loadJSON(assembledSoundURL, dataSoundHandler, errorSoundHandler);
         }
 
-        function dataHandler(APIdata) {
-
-            APIdata.forEach(element => {
-                // console.log(element.value)
+        function dataTempHandler(APIdata) {
+            tempValues = [];
+            times = [];
+            APIdata.forEach((elem, i) => {
+                // console.log(elem.created_at)
+                
+                tempValues[i] = elem.value;
+                times[i] = new Date(elem.created_at);
+                // console.log(times[i].getMinutes())
             })
         }
-
-        function errorHandler(APIerror) {
+        function errorTempHandler(APIerror) {
+            console.error(APIerror);
+        }
+        
+        function dataLightHandler(APIdata) {
+            lightValues = [];
+            APIdata.forEach((elem, i) => {
+                // console.log(elem.created_at)
+                lightValues[i] = elem.value;
+                // console.log(times[i].getMinutes())
+            })
+        }
+        function errorLightHandler(APIerror) {
+            console.error(APIerror);
+        }
+        function dataSoundHandler(APIdata) {
+            soundValues = [];
+            APIdata.forEach((elem, i) => {
+                // console.log(elem.created_at)
+                soundValues[i] = elem.value;
+                // console.log(times[i].getMinutes())
+            })
+        }
+        function errorSoundHandler(APIerror) {
             console.error(APIerror);
         }
 
